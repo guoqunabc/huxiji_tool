@@ -23,7 +23,7 @@ def get_filenames(path):
 
 
 def get_zhoubao_date(file_path):
-    zhoubao_date = file_path.split('\\')[-1]
+    zhoubao_date = file_path.split('/')[-1]
     zhoubao_date = re.findall(r"\d+\.?\d*", zhoubao_date)
     zhoubao_date = zhoubao_date[0].strip('.')
     if len(zhoubao_date) < 8:
@@ -58,23 +58,20 @@ def get_data(file_path):
 
 def get_summary(data_path):
     manager_names = get_manager_names(data_path)
-    df_list = []
+    df_all_dict = {'姓名': [], '总拜访(填写)': []}
     for manager in manager_names:
         filenames = get_filenames(manager)
-        manager = manager.split('\\')[-1]
+        manager = manager.split('/')[-1].strip('0123456789')
         num_total = 0
-        df = pd.DataFrame()
         for _ in filenames:
             num_huxiji = get_data(_)
-            # except Exception as e:
-            #     print(_, e)
             num_total += num_huxiji
-            # zhoubao_date = get_zhoubao_date(_)
-            # df[zhoubao_date] = [num_huxiji]
-        df['总数'] = [num_total]
-        df.rename(index={0: manager}, inplace=True)
-        df_list.append(df)
-    df_all = pd.concat(df_list, axis=0)
+        df_dict = {}
+        df_dict['姓名'] = manager
+        df_dict['总拜访(填写)'] = num_total
+        for k, v in df_dict.items():
+            df_all_dict[k].append(df_dict[k])
+    df_all = pd.DataFrame(df_all_dict)
     return df_all
 
 
@@ -97,7 +94,6 @@ def get_data_v2(file_path):
                         print(file_path, temp_pair)
     return visit_list
 
-
 def visit_judge(input_list):
     '''
     根据输入的list，判断本次为哪种形式的拜访
@@ -117,7 +113,6 @@ def visit_judge(input_list):
                 break
     return mark
 
-
 def visit_count(input_list):
     '''
     根据输入的list，统计不同方式的拜访次数
@@ -134,7 +129,6 @@ def visit_count(input_list):
             pass
     return result
 
-
 def get_summary_v2(data_path):
     '''
     按照拜访方式统计每个产品经理
@@ -144,7 +138,7 @@ def get_summary_v2(data_path):
     debug_list = []
     for manager in manager_names:
         filenames = get_filenames(manager)
-        manager = manager.split('\\')[-1]
+        manager = manager.split('/')[-1].strip('0123456789')
         pair_list = []
         for _ in filenames:
             temp_list = get_data_v2(_)
@@ -155,27 +149,27 @@ def get_summary_v2(data_path):
         for k, v in df_dict.items():
             df_all_dict[k].append(df_dict[k])
     df_all = pd.DataFrame(df_all_dict)
-    df_all.loc[:, '总拜访'] = df_all.loc[:, '电话拜访'] + df_all.loc[:, '上门拜访']
-    return df_all, debug_list
+    df_all.loc[:, '总拜访(统计)'] = df_all.loc[:, '电话拜访'] + df_all.loc[:, '上门拜访']
+    return df_all
 
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    path_data = os.path.join(path_root, 'data_zhoubao', '202008')
-    path_result = os.path.join(path_root, 'result_zhoubao', '拜访次数统计8月.xlsx')
+    path_data = os.path.join(path_root, 'data_zhoubao', '202011')
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访次数统计11月.xlsx')
     # 获取拜访次数统计
     result = get_summary(path_data)
-    print(result)
     result.to_excel(path_result)
     # 拜访方式次数统计
-    path_temp = os.path.join(path_data, '段玉晶', '段玉晶周报20200703.xlsx')
-    result_way = get_summary_v2(path_data)[0]
-    print(result)
-    path_result = os.path.join(path_root, 'result_zhoubao', '拜访分类统计8月.xlsx')
+    result_way = get_summary_v2(path_data)
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访分类统计11月.xlsx')
     result_way.to_excel(path_result)
-    # df_temp = pd.DataFrame(columns = ['拜访方式','拜访内容'])
-    # for _ in visit_type:
-    #     df_temp.loc[df_temp.shape[0],:] = _
-    # path_temp = os.path.join(path_root, 'result_zhoubao', 'debug.xlsx')
-    # df_temp.to_excel(path_temp)
-    # print(res_temp)
+    # 表格合并
+    assert result.shape[0] == result_way.shape[0]
+    result_all = pd.merge(result, result_way, on='姓名')
+    columns = ['姓名', '电话拜访', '上门拜访', '总拜访(统计)', '总拜访(填写)']
+    result_all = result_all[columns]
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访统计汇总11月.xlsx')
+    result_all.to_excel(path_result)
+
+

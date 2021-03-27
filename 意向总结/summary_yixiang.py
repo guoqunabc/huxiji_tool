@@ -2,6 +2,7 @@ import os
 import xlrd
 import numpy as np
 import pandas as pd
+from summary_utils import strip_chinese
 
 COLUMNS = ['序号', '终端医院', '合作伙伴', '科室', '主任', '数量', '分级',
            '当前进展情况描述', '是否库存', '器械科长', '主管副院长',
@@ -26,24 +27,27 @@ def get_name(file_path):
 
 
 def get_data(file_path, manager='阿里斯加'):
-    # file_path = 'E:\\Workspace\\Tool\\意向总结\\data\\产品意向跟踪表—武真羽—20200414.xlsx'
+    # file_path = '/mnt/e/Workspace/Tool/意向总结/data_yixiang/202010/2020版产品意向跟踪表—贾宇鑫—20201030.xlsx'
     wb = xlrd.open_workbook(filename=file_path)
     sheet1 = wb.sheet_by_index(0)
     n_rows, n_cols = sheet1.nrows, sheet1.ncols
     row_beg = 0
     row_end = n_rows
+    marker = 0
     for _ in range(0, n_rows):
         if 'TwinStream高频叠加喷射手术系统' in sheet1.row_values(_):
             # if 'MostCare血流动力学监测仪' in sheet1.row_values(_):
-            row_beg = _+1
+            row_beg = _ + 1
+            marker = 1
             break
+    assert marker == 1
     for _ in range(row_beg, n_rows):
         if sheet1.cell_value(_, 1) == '' and sheet1.cell_value(_, 5) == '':
             row_end = _
             break
     df = pd.DataFrame(columns=COLUMNS)
     for _ in range(row_beg, row_end):
-        df.loc[df.shape[0]+1] = sheet1.row_values(_)+[manager]
+        df.loc[df.shape[0] + 1] = sheet1.row_values(_) + [manager]
     return df
 
 
@@ -72,9 +76,9 @@ def compare_table(table_1, table_2):
     df_1 = pd.read_excel(table_1)
     df_2 = pd.read_excel(table_2)
     df_1['compare'] = df_1.apply(
-        lambda row: str(row['终端医院'])+str(row['科室'])+str(row['主任']), axis=1)
+        lambda row: str(row['终端医院']) + str(row['科室']) + str(row['主任']), axis=1)
     df_2['compare'] = df_2.apply(
-        lambda row: str(row['终端医院'])+str(row['科室'])+str(row['主任']), axis=1)
+        lambda row: str(row['终端医院']) + str(row['科室']) + str(row['主任']), axis=1)
 
     df_1['减少'] = df_1.apply(
         lambda row: None if row['compare'] in list(df_2['compare']) else '减少', axis=1)
@@ -82,9 +86,17 @@ def compare_table(table_1, table_2):
         lambda row: None if row['compare'] in list(df_1['compare']) else '新增', axis=1)
 
     df_2['变化'] = None
-    for _ in df_2[df_2['新增']!='新增']['compare']:
-        if df_1[df_1['compare']==_]['当前进展情况描述'].values[0] != df_2[df_2['compare']==_]['当前进展情况描述'].values[0]:
-            d_index= df_2[df_2['compare']==_].index
+    for _ in df_2[df_2['新增'] != '新增']['compare']:
+        df_1_zhaobiao = strip_chinese(df_1[df_1['compare'] == _]
+                                      ['预计招标时间'].values[0])
+        df_2_zhaobiao = strip_chinese(df_2[df_2['compare'] == _]
+                                      ['预计招标时间'].values[0])
+        if df_1_zhaobiao != df_2_zhaobiao:
+            d_index = df_2[df_2['compare'] == _].index
+            df_2.loc[d_index, '变化'] = '预计招标时间变化'
+
+        if df_1[df_1['compare'] == _]['当前进展情况描述'].values[0] != df_2[df_2['compare'] == _]['当前进展情况描述'].values[0]:
+            d_index = df_2[df_2['compare'] == _].index
             df_2.loc[d_index, '变化'] = '情况描述变化'
 
         df_1_bawo, df_2_bawo = -1, -1
@@ -99,8 +111,8 @@ def compare_table(table_1, table_2):
     df_1 = df_1.drop(['compare'], axis=1)
     df_2 = df_2.drop(['compare'], axis=1)
 
-    path_df_1 = table_1[:-5]+'_对比_上'+'.xlsx'
-    path_df_2 = table_2[:-5]+'_对比_下'+'.xlsx'
+    path_df_1 = table_1[:-5] + '_对比_上' + '.xlsx'
+    path_df_2 = table_2[:-5] + '_对比_下' + '.xlsx'
     df_1.to_excel(path_df_1)
     df_2.to_excel(path_df_2)
     return
@@ -108,12 +120,11 @@ def compare_table(table_1, table_2):
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    # path_data = os.path.join(path_root, 'data')
-    path_data = os.path.join(path_root, 'data', '202008')
-    path_result = os.path.join(path_root, 'result', '意向8月.xlsx')
+    path_data = os.path.join(path_root, 'data_yixiang', '202101')
+    path_result = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
     result = get_summary(path_data)
     result.to_excel(path_result)
 
-    table_1 = os.path.join(path_root, 'result', '结果7月_new.xlsx')
-    table_2 = os.path.join(path_root, 'result', '意向8月.xlsx')
-    compare_table(table_1, table_2)
+    # table_old = os.path.join(path_root, 'result_yixiang', '意向11月.xlsx')
+    # table_new = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
+    # compare_table(table_old, table_new)
