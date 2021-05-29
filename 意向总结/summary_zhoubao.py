@@ -94,6 +94,7 @@ def get_data_v2(file_path):
                         print(file_path, temp_pair)
     return visit_list
 
+
 def visit_judge(input_list):
     '''
     根据输入的list，判断本次为哪种形式的拜访
@@ -113,6 +114,7 @@ def visit_judge(input_list):
                 break
     return mark
 
+
 def visit_count(input_list):
     '''
     根据输入的list，统计不同方式的拜访次数
@@ -128,6 +130,7 @@ def visit_count(input_list):
         else:
             pass
     return result
+
 
 def get_summary_v2(data_path):
     '''
@@ -171,5 +174,3 @@ if __name__ == '__main__':
     result_all = result_all[columns]
     path_result = os.path.join(path_root, 'result_zhoubao', '拜访统计汇总11月.xlsx')
     result_all.to_excel(path_result)
-
-

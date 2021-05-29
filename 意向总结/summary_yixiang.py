@@ -26,8 +26,7 @@ def get_name(file_path):
     return manager_name
 
 
-def get_data(file_path, manager='阿里斯加'):
-    # file_path = '/mnt/e/Workspace/Tool/意向总结/data_yixiang/202010/2020版产品意向跟踪表—贾宇鑫—20201030.xlsx'
+def get_data(file_path, manager='阿拉斯加'):
     wb = xlrd.open_workbook(filename=file_path)
     sheet1 = wb.sheet_by_index(0)
     n_rows, n_cols = sheet1.nrows, sheet1.ncols
@@ -40,7 +39,7 @@ def get_data(file_path, manager='阿里斯加'):
             row_beg = _ + 1
             marker = 1
             break
-    assert marker == 1
+    assert marker == 1, f'{file_path}'
     for _ in range(row_beg, n_rows):
         if sheet1.cell_value(_, 1) == '' and sheet1.cell_value(_, 5) == '':
             row_end = _
@@ -120,11 +119,11 @@ def compare_table(table_1, table_2):
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    path_data = os.path.join(path_root, 'data_yixiang', '202101')
-    path_result = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
+    path_data = os.path.join(path_root, 'data_yixiang', '202103')
+    path_result = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
     result = get_summary(path_data)
     result.to_excel(path_result)
 
-    # table_old = os.path.join(path_root, 'result_yixiang', '意向11月.xlsx')
-    # table_new = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
-    # compare_table(table_old, table_new)
+    table_old = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
+    table_new = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
+    compare_table(table_old, table_new)

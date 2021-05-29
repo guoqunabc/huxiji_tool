@@ -4,7 +4,7 @@ import xlrd
 import pandas as pd
 from tqdm import tqdm
 
-NAMES_MANAGER = ['徐明月', '李想', '杨照', '梁小东', '武思慧', '武真羽', '段玉晶', '王兴龙', '董斌', '贾宇鑫']
+NAMES_MANAGER = ['徐明月', '李想', '杨照', '梁小东', '武思慧', '武真羽', '段玉晶', '王兴龙', '董斌', '贾宇鑫', '卢毓斌']
 ALLOWED_EXT = ['.xls', '.xlsx']
 
 
@@ -39,13 +39,14 @@ def find_manager_files(name_manager, dir_files):
                 list_file.append(os.path.join(path, file_name))
     return list_file
 
+
 def get_data(file_path):
     wb = xlrd.open_workbook(filename=file_path)
     sheet1 = wb.sheet_by_index(0)
     n_rows, n_cols = sheet1.nrows, sheet1.ncols
     row_tar, col_tar = 0, 0
     for _ in range(0, n_rows):
-        if '按产品分类拜访次数' in sheet1.row_values(_):
+        if '按产品分类拜访次数' in [str(_cell).replace(' ', '') for _cell in sheet1.row_values(_)]:
             row_tar = _
             break
     for _ in range(0, n_cols):
@@ -53,15 +54,10 @@ def get_data(file_path):
             col_tar = _
             break
     cell_tar = sheet1.cell_value(row_tar, col_tar)
-    # for symbol in ['：', ':']:
-    #     if symbol in cell_tar:
-    #         result_list = cell_tar.split(symbol)
-    #         break
-    try:
-        # result = int(result_list[-1])
-        result = re.findall(r"\d+", cell_tar)[0]
-    except:
-        result = 0
+    result = 0
+    re_result = re.findall(r"\d+", cell_tar)
+    if len(re_result) > 0:
+        result = re_result[0]
     return result
 
 
@@ -72,15 +68,14 @@ def get_summary(dir_files):
         filenames = find_manager_files(manager, dir_files)
         num_total = 0
         for _ in filenames:
-            num_huxiji = get_data(_)
+            num_huxiji = int(get_data(_))
             num_total += num_huxiji
-        df_dict = {}
-        df_dict['姓名'] = manager
-        df_dict['总拜访(填写)'] = num_total
+        df_dict = {'姓名': manager, '总拜访(填写)': num_total}
         for k, v in df_dict.items():
             df_all_dict[k].append(df_dict[k])
     df_all = pd.DataFrame(df_all_dict)
     return df_all
+
 
 def get_data_v2(file_path):
     wb = xlrd.open_workbook(filename=file_path)
@@ -101,11 +96,12 @@ def get_data_v2(file_path):
                         print(file_path, temp_pair)
     return visit_list
 
+
 def visit_judge(input_list):
-    '''
+    """
     根据输入的list，判断本次为哪种形式的拜访
     return: 否定、电话、上门
-    '''
+    """
     assert len(input_list) == 3
     mark = '否定'
     for _ in ['呼吸机', '高频']:
@@ -119,6 +115,7 @@ def visit_judge(input_list):
                 mark = '上门'
                 break
     return mark
+
 
 def visit_count(input_list):
     '''
@@ -135,6 +132,7 @@ def visit_count(input_list):
         else:
             pass
     return result
+
 
 def get_summary_v2(dir_files):
     '''
@@ -177,23 +175,21 @@ def get_data_v3(file_path):
     return
 
 
-
-
 if __name__ == '__main__':
     path_root = os.getcwd()
-    path_data = os.path.join(path_root, 'data_zhoubao', '202011')
-    path_result = os.path.join(path_root, 'result_zhoubao', '拜访次数统计11月.xlsx')
+    path_data = os.path.join(path_root, 'data_zhoubao', '202103')
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访次数统计1-3月.xlsx')
     # 获取拜访次数统计
     result = get_summary(path_data)
     result.to_excel(path_result)
     # 拜访方式次数统计
     result_way = get_summary_v2(path_data)
-    path_result = os.path.join(path_root, 'result_zhoubao', '拜访分类统计11月.xlsx')
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访分类统计1-3月.xlsx')
     result_way.to_excel(path_result)
     # 表格合并
     assert result.shape[0] == result_way.shape[0]
     result_all = pd.merge(result, result_way, on='姓名')
     columns = ['姓名', '电话拜访', '上门拜访', '总拜访(统计)', '总拜访(填写)']
     result_all = result_all[columns]
-    path_result = os.path.join(path_root, 'result_zhoubao', '拜访统计汇总11月.xlsx')
+    path_result = os.path.join(path_root, 'result_zhoubao', '拜访统计汇总1-3月.xlsx')
     result_all.to_excel(path_result)
