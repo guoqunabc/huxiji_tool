@@ -40,16 +40,16 @@ def read_data_xlsx_v1(file_path, sheet_name):
 
 # 预处理并存取pandas格式省市统计数据
 path_root = os.getcwd()
-arg_month = '202008'
-path_data = os.path.join(path_root, 'data_raw', arg_month, '2020年中招网信息整理 20200828.xlsx')
+arg_month = '202010'
+path_data = os.path.join(path_root, 'data_raw', arg_month, '2020年中招网信息整理 20201030.xlsx')
 data_df = read_data_xlsx_v1(path_data, '高频呼吸机')
 
-path_save = os.path.join(path_root, 'data', arg_month, '2020年中招网信息.xlsx')
+path_save = os.path.join(path_root, 'data', arg_month, '中招网.xlsx')
 data_df.to_excel(path_save, index=False)
 
 # 预期市场总量
 path_data_1 = os.path.join(path_root, 'data', arg_month, '2020年中招网信息.xlsx')
-path_data_2 = os.path.join(path_root, 'data_raw', arg_month, '8月意向表.xlsx')
+path_data_2 = os.path.join(path_root, 'data_raw', arg_month, '10月意向表.xlsx')
 
 df_1 = pd.read_excel(path_data_1)
 df_2 = pd.read_excel(path_data_2)
@@ -57,6 +57,9 @@ df_all = pd.merge(df_1, df_2, how='outer', on=['省份'])
 df_all = df_all.fillna(0)
 df_all.loc[:, '数量'] = df_all['数量_x'] + df_all['数量_y']
 df_all = df_all[['省份', '数量']]
+
+path_save = os.path.join(path_root, 'data', arg_month, '意向表.xlsx')
+df_2.to_excel(path_save, index=False)
 
 path_save = os.path.join(path_root, 'data', arg_month, '预期市场总量.xlsx')
 df_all.to_excel(path_save, index=False)

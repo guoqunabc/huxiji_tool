@@ -22,7 +22,7 @@ def get_name(file_path):
     manager_name = ''
     for symbol in sep_symbol:
         if symbol in file_path:
-            manager_name = file_path.split(symbol)[-2]
+            manager_name = os.path.splitext(file_path)[0].split(symbol)[1]
     return manager_name
 
 
@@ -119,11 +119,13 @@ def compare_table(table_1, table_2):
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    path_data = os.path.join(path_root, 'data_yixiang', '202103')
-    path_result = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
+    path_data = os.path.join(path_root, 'data_yixiang', '202105')
+    path_result = os.path.join(path_root, 'result_yixiang', '意向05月.xlsx')
     result = get_summary(path_data)
     result.to_excel(path_result)
 
-    table_old = os.path.join(path_root, 'result_yixiang', '意向01月.xlsx')
-    table_new = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
+    table_old = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
+    table_new = os.path.join(path_root, 'result_yixiang', '意向05月.xlsx')
     compare_table(table_old, table_new)
+
+    print('Successful!')
