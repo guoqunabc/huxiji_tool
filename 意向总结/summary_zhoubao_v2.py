@@ -4,7 +4,7 @@ import xlrd
 import pandas as pd
 from tqdm import tqdm
 
-NAMES_MANAGER = ['徐明月', '李想', '杨照', '梁小东', '武思慧', '武真羽', '段玉晶', '王兴龙', '董斌', '贾宇鑫', '卢毓斌']
+NAMES_MANAGER = ['徐明月', '李想', '杨照', '梁小东', '武思慧', '武真羽', '段玉晶', '王兴龙', '董斌', '贾宇鑫', '卢毓斌', '郭孟蛟']
 ALLOWED_EXT = ['.xls', '.xlsx']
 
 

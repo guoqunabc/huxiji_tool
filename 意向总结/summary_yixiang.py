@@ -34,8 +34,8 @@ def get_data(file_path, manager='阿拉斯加'):
     row_end = n_rows
     marker = 0
     for _ in range(0, n_rows):
-        if 'TwinStream高频叠加喷射手术系统' in sheet1.row_values(_):
-            # if 'MostCare血流动力学监测仪' in sheet1.row_values(_):
+        # if 'TwinStream高频叠加喷射手术系统' in sheet1.row_values(_):
+        if 'MostCare血流动力学监测仪' in sheet1.row_values(_):
             row_beg = _ + 1
             marker = 1
             break
@@ -99,10 +99,12 @@ def compare_table(table_1, table_2):
             df_2.loc[d_index, '变化'] = '情况描述变化'
 
         df_1_bawo, df_2_bawo = -1, -1
-        if not np.isnan(list(df_1[df_1['compare'] == _]['意向把握度'])[0]):
-            df_1_bawo = list(df_1[df_1['compare'] == _]['意向把握度'])[0]
-        if not np.isnan(list(df_2[df_2['compare'] == _]['意向把握度'])[0]):
-            df_2_bawo = list(df_2[df_2['compare'] == _]['意向把握度'])[0]
+        bawo_temp = list(df_1[df_1['compare'] == _]['意向把握度'])[0]
+        if not np.isnan(bawo_temp):
+            df_1_bawo = bawo_temp
+        bawo_temp = list(df_2[df_2['compare'] == _]['意向把握度'])[0]
+        if not np.isnan(bawo_temp):
+            df_2_bawo = bawo_temp
         if df_1_bawo != df_2_bawo:
             d_index = df_2[df_2['compare'] == _].index
             df_2.loc[d_index, '变化'] = '把握度变化'
@@ -119,13 +121,14 @@ def compare_table(table_1, table_2):
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    path_data = os.path.join(path_root, 'data_yixiang', '202105')
-    path_result = os.path.join(path_root, 'result_yixiang', '意向05月.xlsx')
+    month = 8
+    path_data = os.path.join(path_root, 'data_yixiang', f'2021{month:02d}')
+    path_result = os.path.join(path_root, 'result_yixiang', f'意向{month:02d}月.xlsx')
     result = get_summary(path_data)
-    result.to_excel(path_result)
+    result.to_excel(path_result, index=False)
 
-    table_old = os.path.join(path_root, 'result_yixiang', '意向03月.xlsx')
-    table_new = os.path.join(path_root, 'result_yixiang', '意向05月.xlsx')
+    table_old = os.path.join(path_root, 'result_yixiang', f'意向{month-1:02d}月.xlsx')
+    table_new = os.path.join(path_root, 'result_yixiang', f'意向{month:02d}月.xlsx')
     compare_table(table_old, table_new)
 
     print('Successful!')
