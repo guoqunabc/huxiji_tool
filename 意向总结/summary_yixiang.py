@@ -34,8 +34,8 @@ def get_data(file_path, manager='阿拉斯加'):
     row_end = n_rows
     marker = 0
     for _ in range(0, n_rows):
-        # if 'TwinStream高频叠加喷射手术系统' in sheet1.row_values(_):
-        if 'MostCare血流动力学监测仪' in sheet1.row_values(_):
+        if 'TwinStream高频叠加喷射手术系统' in sheet1.row_values(_):
+        # if 'MostCare血流动力学监测仪' in sheet1.row_values(_):
             row_beg = _ + 1
             marker = 1
             break
@@ -121,7 +121,7 @@ def compare_table(table_1, table_2):
 
 if __name__ == '__main__':
     path_root = os.getcwd()
-    month = 8
+    month = 10
     path_data = os.path.join(path_root, 'data_yixiang', f'2021{month:02d}')
     path_result = os.path.join(path_root, 'result_yixiang', f'意向{month:02d}月.xlsx')
     result = get_summary(path_data)
